@@ -1,7 +1,7 @@
 
 import os
 import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import discord
 from discord.ext import commands
@@ -19,7 +19,7 @@ class HealthHandler(BaseHTTPRequestHandler):
 
 def run_web():
     port = int(os.environ.get("PORT", 10000))
-    server = HTTPServer(("0.0.0.0", port), HealthHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", port), HealthHandler)
     server.serve_forever()
 
 
@@ -40,4 +40,9 @@ async def ping(ctx):
 
 
 threading.Thread(target=run_web, daemon=True).start()
-bot.run(os.getenv("DISCORD_TOKEN"))
+
+token = os.getenv("DISCORD_TOKEN")
+if not token:
+    raise RuntimeError("DISCORD_TOKEN is missing in Render environment variables")
+
+bot.run(token)
